@@ -8,10 +8,14 @@ import threading
 import base64
 import os
 
-# RabbitMQ 호스트를 외부 IP로 설정
-RABBITMQ_HOST = "222.112.27.120"  # RabbitMQ 서버의 실제 IP 또는 도메인
-USERNAME = "guest"  # RabbitMQ 사용자 이름
-PASSWORD = "guest"  # RabbitMQ 사용자 비밀번호
+# RabbitMQ 연결 설정
+# 배포용 PC 에 rabbitMQ 서버 및 GPU서버 세팅 완료 - 250102 민식 
+# .env 파일 수정후 사용 (슬랙 공지 참고)
+RABBITMQ_HOST = os.getenv("RBMQ_HOST")
+RABBITMQ_PORT = os.getenv("RBMQ_PORT")
+RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")  # RabbitMQ 사용자 (기본값: guest)
+RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "guest")  # RabbitMQ 비밀번호 (기본값: guest)
+
 REQUEST_QUEUE = "image_generation_requests"
 RESPONSE_QUEUE = "image_generation_responses"
 
@@ -129,9 +133,9 @@ def callback(ch, method, properties, body):
 
 
 # RabbitMQ 연결 및 소비자 실행
-credentials = pika.PlainCredentials(USERNAME, PASSWORD)
+credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host=RABBITMQ_HOST, port=5672, credentials=credentials, heartbeat=6000)
+    pika.ConnectionParameters(host=RABBITMQ_HOST, port=RABBITMQ_PORT, credentials=credentials, heartbeat=6000)
 )
 
 channel = connection.channel()
